@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Чпокер - пупырчатый релаксант</title>
+<meta name="title" content="Чпокер - пупырчатый релаксант" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="jquery-ui.css" type="text/css" media="all" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="jquery.min.js" type="text/javascript"></script>
+<script src="jquery-ui.min.js" type="text/javascript"></script>
+<style type="text/css">
+  body { padding: 30px;  font-family: Verdana, sans-serif;  }
+  .clear { clear: both; }
+  #field { width: 440px; line-height: 0; }
+  #field span { display: inline-block; width: 44px; height: 44px; background: #666 url('chpocker.jpg'); cursor: pointer; }
+  #field .n0 { background-position: 48px 56px; }
+  #field .n1 { background-position: 62px 99px; }
+  #field .n2 { background-position: 106px 99px; }
+  #field .n3 { background-position: 149px 99px; }
+  #field .y0 { background-position: 277px 187px; }
+  #field .y1 { background-position: 148px 186px; }
+  #field .y2 { background-position: 176px 142px; }
+  #field .y3 { background-position: 234px 99px; }
+  #field .chpocked { cursor: normal; }
+</style>
+
+
+</head>
+<body>
+
+
+<div id="field"></div>
+<audio src="chpocker.wav"></audio>
+<label><input type="checkbox" checked id="soundEnabled"> Звук</label>
+
+
+<script type="text/javascript">
+  $(function() {
+  
+    var html = '';
+    for (var i = 0; i < 100; i++) {
+      html += '<span class="n' + Math.floor(Math.random() * 4) + '"></span>';
+    }
+  
+    $('#field').attr('unselectable', 'on')
+      .css('user-select', 'none')
+      .css('MozUserSelect', 'none')
+      .append(html);
+  
+    var pressed = false;
+    var quiet = false;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioContext = new AudioContext();
+    const audioElement = document.querySelector("audio");
+    const track = audioContext.createMediaElementSource(audioElement);
+    const pannerOptions = { pan: 0 };
+    const panner = new StereoPannerNode(audioContext, pannerOptions);
+    track.connect(panner).connect(audioContext.destination);    
+  
+    $('#field span').mousedown(function () {
+      pressed = true;
+      $(this).mouseenter();
+    }).mouseup(function () {
+      pressed = false;
+    }).mouseenter(function () {
+  
+      if (!pressed || $(this).hasClass('chpocked')) { return false; }
+  
+      if ($('#soundEnabled').attr('checked')){
+        const index = Array.prototype.indexOf.call(this.parentNode.children, this)%10;
+        panner.pan.value = index/9*2-1; // normalize 0..9 to -1..1
+        audioElement.currentTime = 0;
+        audioElement.play();
+      }
+      var rnd = Math.floor(Math.random() * 4);
+      $(this).removeClass()
+        .addClass('chpocked y' + rnd)
+  
+      return false;
+    });
+  
+  });
+  </script>
+</body>
+</html>
