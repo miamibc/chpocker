@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Чпокер - пупырчатый релаксант v3</title>
+<meta name="title" content="Чпокер - пупырчатый релаксант" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style type="text/css">
+  body { padding: 30px;  font-family: Verdana, sans-serif;  }
+  .clear { clear: both; }
+  #field { width: 440px; line-height: 0; }
+  #field span { display: inline-block; width: 44px; height: 44px; background: #666 url('chpocker.jpg'); cursor: pointer; }
+  #field .n0 { background-position: 48px 56px; }
+  #field .n1 { background-position: 62px 99px; }
+  #field .n2 { background-position: 106px 99px; }
+  #field .n3 { background-position: 149px 99px; }
+  #field .y0 { background-position: 277px 187px; }
+  #field .y1 { background-position: 148px 186px; }
+  #field .y2 { background-position: 176px 142px; }
+  #field .y3 { background-position: 234px 99px; }
+  #field .chpocked { /* cursor: auto; */ }
+</style>
+
+
+</head>
+<body>
+
+
+<div id="field" unselectable="on" style="user-select: none;"></div>
+<label><input type="checkbox" checked id="soundEnabled"> Звук</label>
+
+
+<script type="text/javascript">
+
+  var html = '';
+  pressed = false;
+  const field = document.getElementById('field');
+  const mouseenter = new MouseEvent('mouseenter');
+
+  //const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioElement = new Audio('chpocker.wav');
+  const audioCtx =  new AudioContext();
+  const gain = audioCtx.createGain();
+  const panner = new StereoPannerNode(audioCtx, { pan: 0 });
+  const track = audioCtx.createMediaElementSource(audioElement);
+  track.connect(gain).connect(panner).connect(audioCtx.destination);    
+
+  for (var i = 0; i < 100; i++) {
+    cell = document.createElement('span');
+    field.appendChild(cell);
+    cell.classList.add('n'+ Math.floor(Math.random() * 4));
+    cell.addEventListener('mouseup', (e)=>{ pressed = false; })
+    cell.addEventListener('mousedown', (e)=>{ pressed = true; e.target.dispatchEvent(mouseenter); })
+    cell.addEventListener('mouseenter', (e)=>{
+      const el = e.target;
+      if (!pressed || el.classList.contains('chpocked')) return;
+      // play chpock sound
+      if (document.getElementById('soundEnabled').checked){
+        const index = Array.prototype.indexOf.call(el.parentNode.children, el)%10;
+        audioElement.currentTime = 0;
+        panner.pan.setValueAtTime(index/9*2-1, audioCtx.currentTime);; // normalize 0..9 to -1..1
+        gain.gain.setValueAtTime(Math.random(), audioCtx.currentTime);
+        audioElement.play();
+      }
+      var rnd = Math.floor(Math.random() * 4);
+      el.className = 'chpocked y' + rnd;
+    });
+
+  }
+
+  </script>
+</body>
+</html>

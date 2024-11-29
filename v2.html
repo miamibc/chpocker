@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Чпокер - пупырчатый релаксант</title>
+<title>Чпокер - пупырчатый релаксант v2</title>
 <meta name="title" content="Чпокер - пупырчатый релаксант" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" href="jquery-ui.css" type="text/css" media="all" />
@@ -49,13 +49,13 @@
   
     var pressed = false;
     var quiet = false;
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    const audioContext = new AudioContext();
-    const audioElement = document.querySelector("audio");
-    const track = audioContext.createMediaElementSource(audioElement);
-    const pannerOptions = { pan: 0 };
-    const panner = new StereoPannerNode(audioContext, pannerOptions);
-    track.connect(panner).connect(audioContext.destination);    
+    //const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioElement = new Audio('chpocker.wav');
+    const audioCtx =  new AudioContext();
+    const gain = audioCtx.createGain();
+    const panner = new StereoPannerNode(audioCtx, { pan: 0 });
+    const track = audioCtx.createMediaElementSource(audioElement);
+    track.connect(gain).connect(panner).connect(audioCtx.destination);    
   
     $('#field span').mousedown(function () {
       pressed = true;
@@ -68,8 +68,9 @@
   
       if ($('#soundEnabled').attr('checked')){
         const index = Array.prototype.indexOf.call(this.parentNode.children, this)%10;
-        panner.pan.value = index/9*2-1; // normalize 0..9 to -1..1
         audioElement.currentTime = 0;
+        panner.pan.setValueAtTime(index/9*2-1, audioCtx.currentTime);; // normalize 0..9 to -1..1
+        gain.gain.setValueAtTime(Math.random(), audioCtx.currentTime);
         audioElement.play();
       }
       var rnd = Math.floor(Math.random() * 4);
