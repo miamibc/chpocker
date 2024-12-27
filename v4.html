@@ -28,45 +28,108 @@
 <canvas id="canvas"></canvas>
 
 <script>
-  const ctx = document.getElementById('canvas').getContext('2d');
-  window.addEventListener('resize', function(e){
-    ctx.canvas.width  = window.innerWidth;
-    ctx.canvas.height = window.innerHeight;
-  })
-  ctx.canvas.width  = window.innerWidth;
-  ctx.canvas.height = window.innerHeight;
-  
 
-  const sprite = {
-    img: new Image,
-    size: 44,  // size of the sprite
-    new:[      // new elements
+class Grid {
+    
+    img = new Image()
+    size = 44  // size of the sprite
+    piece = [    // pieces 
+      // (first half is unchpocked)
       { sx: 62, sy: 99 },
       { sx: 106, sy: 99 },
       { sx: 275, sy: 187 },
       { sx: 148, sy: 186 },
       { sx: 176, sy: 142 },
       { sx: 234, sy: 99 },
-    ],
-    chpocked:[ // chpocked elements
+      // (second half is chpocked)
       { sx: 48, sy: 56 },
       { sx: 149, sy: 99 },
-  ]};
-  sprite.img.addEventListener('load', () => {
-    console.log('Image loaded');
-    const spritemax = sprite.new.length-1;
-    for ( var y = 0; y < (ctx.canvas.height+100)/sprite.size; y++) {
-    for ( var x = 0; x < (ctx.canvas.width+100)/sprite.size; x++) {
-        let xr = (y%2 ? x-.5 : x)*sprite.size; 
-        let yr =  y*sprite.size;
-        let rnd = Math.floor(Math.random()*spritemax);
-        let spr = sprite.new[rnd]
-        ctx.drawImage(sprite.img, spr.sx, spr.sy, sprite.size, sprite.size, xr, yr, sprite.size, sprite.size);
+      { sx: 48, sy: 56 },
+      { sx: 149, sy: 99 },
+      { sx: 48, sy: 56 },
+      { sx: 149, sy: 99 },
+    ]
+    field = []
+
+    constructor(){
+      this.img.addEventListener('load', () => this.drawEverything() );
+      this.img.src = 'chpocker.jpg';
+    }
+
+    getGridCoordinate = (x,y) => {
+      const dx = (y%2 ? x-.5 : x)*this.size
+      const dy = y*this.size
+      return {dx,dy}
+    }
+
+    drawSprite = (x,y) => {
+      let rnd = null;
+      const {dx,dy} = this.getGridCoordinate(x,y);
+      if (this.field[x] === undefined) this.field[x] = [];
+      if (this.field[x][y] === undefined) 
+        rnd = this.field[x][y] = Math.floor(Math.random()*Math.floor(this.piece.length/2)); 
+      else 
+        rnd = this.field[x][y]  
+      ctx.drawImage(this.img, this.piece[rnd].sx, this.piece[rnd].sy, this.size, this.size, dx, dy, this.size, this.size);
+    }
+
+    drawCursor = (x,y) => {
+      const {dx,dy} = this.getGridCoordinate(x,y);      
+      ctx.beginPath();
+      ctx.rect(dx+1, dy+1, this.size-2, this.size-2);
+      ctx.stroke();
+    }
+
+    drawEverything = () => {
+      console.log('Grid draw start');
+      for ( let y = 0; y < ctx.canvas.height/this.size+1; y++) 
+        for ( let x = 0; x < ctx.canvas.width/this.size+1; x++) 
+          this.drawSprite(x,y);
+      console.log('Grid draw end');
+    }
+  }
+
+  const ctx = document.getElementById('canvas').getContext('2d');
+  const grid = new Grid()
+
+  window.addEventListener('resize', function(e){
+    ctx.canvas.width  = window.innerWidth;
+    ctx.canvas.height = window.innerHeight;
+    grid.drawEverything();
+  })
+
+  ctx.canvas.width  = window.innerWidth;
+  ctx.canvas.height = window.innerHeight;
+
+  let action = { mousedown: false, mousex: null, mousey: null, selected: null }
+  canvas.addEventListener('mousedown', () => action.mousedown = true )
+  canvas.addEventListener('mouseup', () => action.mousedown = false )
+  canvas.addEventListener('mousemove', (e) => { action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; } )
+  canvas.addEventListener('mouseout', () => action.mousex = action.mousey = null )
+
+  function render() {
+    window.requestAnimationFrame(render);
+    
+    if (action.mousex && action.mousey) {
+      x = Math.floor( action.mousex / grid.size)
+      y = Math.floor( action.mousey / grid.size)
+      if (!action.selected){ 
+        action.selected = { x:x, y:y }
+        grid.drawCursor(x,y)
       }
-    }   
-    console.log('Image drawn');
-  });
-  sprite.img.src = 'chpocker.jpg';
+      if (action.selected.x!=x || action.selected.y!=y ) {
+          grid.drawSprite(action.selected.x,action.selected.y)
+          action.selected = { x:x,y:y }
+          grid.drawCursor(x,y)
+      }
+    } else {
+      if (action.selected)
+        grid.drawSprite(action.selected.x,action.selected.y)
+    }
+    
+  }
+
+  window.requestAnimationFrame(render);
 
 
 </script>
