@@ -102,6 +102,28 @@ class Grid {
           this.drawSprite(x,y);
       console.log('Grid draw end');
     }
+
+    drawMessage(text){
+      ctx.fillStyle = "#003300";
+      ctx.font = '20px sans-serif';
+      
+      let textWidth = ctx.measureText(text ).width;
+      ctx.fillText(text , (ctx.canvas.width/2) - (textWidth / 2), ctx.canvas.height/3);
+      
+    }
+
+    cleanMessage( text) {
+      const m = ctx.measureText(text )
+      let w = Math.ceil(m.width / this.size)
+      let xfrom = Math.floor( ( canvas.width - m.width )/2/this.size);
+      let yfrom  = Math.floor( ctx.canvas.height/3 / this.size );
+
+      for(let y = yfrom-1; y<=yfrom+1; y++) {
+      for (let x = xfrom-1; x<=xfrom+w; x++) {
+        this.drawSprite( x, y);
+      }}
+    }
+
   }
 
   const ctx = document.getElementById('canvas').getContext('2d');
@@ -119,7 +141,10 @@ class Grid {
   let action = { mousedown: false, mousex: null, mousey: null, selected: null }
   canvas.addEventListener('mousedown', () => action.mousedown = true )
   canvas.addEventListener('mouseup', () => action.mousedown = false )
+  canvas.addEventListener('ontouchstart', () => action.mousedown = true )
+  canvas.addEventListener('ontouchend', () => action.mousedown = false )
   canvas.addEventListener('mousemove', (e) => { action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; } )
+  canvas.addEventListener('ontouchmove', (e) => { action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; } )
   canvas.addEventListener('mouseout', () => action.mousex = action.mousey = null )
 
   function render() {
@@ -141,7 +166,11 @@ class Grid {
       if (action.selected)
         grid.drawSprite(action.selected.x,action.selected.y)
     }
-    
+
+    if (action.mousedown)
+      grid.drawMessage('Fire is not supported yet');
+    else
+      grid.cleanMessage('Fire is not supported yet');
   }
 
   window.requestAnimationFrame(render);
