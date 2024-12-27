@@ -18,8 +18,11 @@
   canvas { 
     width:  100vw;
     height: 100vh;
-    background-color: #666;}
+    background-color: #666;
+    cursor: none;
+  }
   
+
 </style>
 </head>
 <body>
@@ -76,7 +79,19 @@ class Grid {
     drawCursor = (x,y) => {
       const {dx,dy} = this.getGridCoordinate(x,y);      
       ctx.beginPath();
-      ctx.rect(dx+1, dy+1, this.size-2, this.size-2);
+      // ctx.rect(dx+1, dy+1, this.size-2, this.size-2);
+      ctx.moveTo(dx+(this.size*1/9), dy+(this.size/2));
+      ctx.lineTo(dx+(this.size*8/9), dy+(this.size/2));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(dx+(this.size/2), dy+(this.size*1/9) )
+      ctx.lineTo(dx+(this.size/2), dy+(this.size*8/9))
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(dx+(this.size/2), dy+(this.size/2), this.size/6, 0, 2 * Math.PI)
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(dx+(this.size/2), dy+(this.size/2), this.size/4, 0, 2 * Math.PI)
       ctx.stroke();
     }
 
