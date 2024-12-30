@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Чпокер - пупырчатый релаксант v1</title>
+<meta name="title" content="Чпокер - пупырчатый релаксант" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="jquery-ui.css" type="text/css" media="all" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="jquery.min.js" type="text/javascript"></script>
+<script src="jquery-ui.min.js" type="text/javascript"></script>
+<style type="text/css">
+  body { padding: 30px;  font-family: Verdana, sans-serif;  }
+  .clear { clear: both; }
+  #field { width: 440px; line-height: 0; }
+  #sound { display: none; }
+  #field span { display: inline-block; width: 44px; height: 44px; background: #666 url('chpocker.jpg'); cursor: pointer; }
+  #field .n0 { background-position: 48px 56px; }
+  #field .n1 { background-position: 62px 99px; }
+  #field .n2 { background-position: 106px 99px; }
+  #field .n3 { background-position: 149px 99px; }
+  #field .y0 { background-position: 277px 187px; }
+  #field .y1 { background-position: 148px 186px; }
+  #field .y2 { background-position: 176px 142px; }
+  #field .y3 { background-position: 234px 99px; }
+  #field .chpocked { cursor: normal; }
+</style>
+
+<script type="text/javascript">
+$(function() {
+
+  var html = '';
+  for (var i = 0; i < 100; i++) {
+    html += '<span class="n' + Math.floor(Math.random() * 4) + '"></span>';
+  }
+
+  $('#field').attr('unselectable', 'on')
+    .css('user-select', 'none')
+    .css('MozUserSelect', 'none')
+    .append(html);
+
+  var pressed = false;
+
+  $('#field span').mousedown(function () {
+    pressed = true;
+    $(this).mouseenter();
+  }).mouseup(function () {
+    pressed = false;
+  }).mouseenter(function () {
+
+    if (!pressed || $(this).hasClass('chpocked')) { return false; }
+    $('#sound').append('<audio controls autoplay><source src="chpocker.wav" type="audio/wav"></audio>');
+
+    var rnd = Math.floor(Math.random() * 4);
+    $(this).removeClass()
+      .addClass('chpocked y' + rnd)
+
+    return false;
+  });
+
+});
+</script>
+
+</head>
+<body>
+
+
+<div id="field"></div>
+<div id="sound"></div>
+<a href="#" onclick="$('#sound').remove(); $(this).remove(); return false;">Без звука</a>
+
+</body>
+</html>
