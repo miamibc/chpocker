@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Чпокер - пупырчатый релаксант v4</title>
+<meta name="title" content="Чпокер - пупырчатый релаксант" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1,target-densitydpi=device-dpi, user-scalable=no" />
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style type="text/css">
+
+  html, body {
+    width:  100vw;
+    height: 100vh;
+    margin: 0;
+    padding:0;
+    font-family: Verdana, sans-serif;
+    display: block;
+    overflow: hidden;
+  }
+  canvas { 
+    user-select: none; /* Standard syntax */
+    width:  100vw;
+    height: 100vh;
+    background-color: #666;
+    cursor: none;
+  }
+
+</style>
+</head>
+<body  oncontextmenu="return false;">
+
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+class Grid {
+    
+    img = new Image()
+    size = 44  // size of the sprite
+    piece = [    // pieces 
+      // (first half is unchpocked)
+      { sx: 14, sy: 10 },
+      { sx: 0, sy: 54 },
+      { sx: 57, sy: 97 },
+      { sx: 100, sy: 11}, 
+
+      // (second half is chpocked)
+      { sx: 43, sy: 53 },
+      { sx: 171, sy: 54 },
+      { sx: 142, sy: 96 },
+      { sx: 86, sy: 140 },
+    ]
+    field = []
+
+    constructor(){
+      this.img.addEventListener('load', () => this.drawEverything() );
+      this.img.src = 'chpocker.jpg';
+    }
+
+    getGridCoordinate = (x,y) => {
+      const dx = (y%2 ? x-.5 : x)*this.size
+      const dy = y*this.size
+      return {dx,dy}
+    }
+
+    drawSprite = (x,y) => {
+      let rnd = null;
+      const {dx,dy} = this.getGridCoordinate(x,y);
+      if (this.field[x] === undefined) this.field[x] = [];
+      if (this.field[x][y] === undefined) 
+        rnd = this.field[x][y] = Math.floor(Math.random()*Math.floor(this.piece.length)); 
+      else 
+        rnd = this.field[x][y]  
+      ctx.drawImage(this.img, this.piece[rnd].sx, this.piece[rnd].sy, this.size, this.size, dx, dy, this.size, this.size);
+    }
+
+    drawCursor = (x,y) => {
+      const {dx,dy} = this.getGridCoordinate(x,y);      
+      ctx.beginPath();
+      // ctx.rect(dx+1, dy+1, this.size-2, this.size-2);
+      ctx.moveTo(dx+(this.size*1/9), dy+(this.size/2));
+      ctx.lineTo(dx+(this.size*8/9), dy+(this.size/2));
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(dx+(this.size/2), dy+(this.size*1/9) )
+      ctx.lineTo(dx+(this.size/2), dy+(this.size*8/9))
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(dx+(this.size/2), dy+(this.size/2), this.size/6, 0, 2 * Math.PI)
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(dx+(this.size/2), dy+(this.size/2), this.size/4, 0, 2 * Math.PI)
+      ctx.stroke();
+    }
+
+    drawEverything = () => {
+      console.log('Grid draw start');
+      for ( let y = 0; y < ctx.canvas.height/this.size+1; y++) 
+        for ( let x = 0; x < ctx.canvas.width/this.size+1; x++) 
+          this.drawSprite(x,y);
+      console.log('Grid draw end');
+    }
+
+    drawMessage(text){
+      ctx.fillStyle = "#003300";
+      ctx.font = '20px sans-serif';
+      
+      let textWidth = ctx.measureText(text ).width;
+      ctx.fillText(text , (ctx.canvas.width/2) - (textWidth / 2), ctx.canvas.height/3);
+      
+    }
+
+    cleanMessage( text) {
+      const m = ctx.measureText(text )
+      let w = Math.ceil(m.width / this.size)
+      let xfrom = Math.floor( ( canvas.width - m.width )/2/this.size);
+      let yfrom  = Math.floor( ctx.canvas.height/3 / this.size );
+
+      for(let y = yfrom-1; y<=yfrom+1; y++) {
+      for (let x = xfrom-1; x<=xfrom+w; x++) {
+        this.drawSprite( x, y);
+      }}
+    }
+
+  }
+
+  const ctx = document.getElementById('canvas').getContext('2d');
+  const grid = new Grid()
+
+  window.addEventListener('resize', function(e){
+    ctx.canvas.width  = window.innerWidth;
+    ctx.canvas.height = window.innerHeight;
+    grid.drawEverything();
+  })
+
+  ctx.canvas.width  = window.innerWidth;
+  ctx.canvas.height = window.innerHeight;
+
+  let action = { mousedown: false, mousex: null, mousey: null, selected: null, message: null }
+  canvas.addEventListener('mousedown', (e) => { e.preventDefault(); action.mousedown = true; return false; })
+  canvas.addEventListener('mouseup', (e) => { e.preventDefault(); action.mousedown = false; return false; })
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); action.mousedown = true; return false; })
+  canvas.addEventListener('touchend', (e) => { e.preventDefault(); action.mousedown = false; return false; })
+  canvas.addEventListener('mousemove', (e) => { e.preventDefault(); action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
+  canvas.addEventListener('touchmove', (e) => { e.preventDefault(); action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
+  canvas.addEventListener('mouseout', (e) => {e.preventDefault(); action.mousex = action.mousey = null; return false; })
+  canvas.addEventListener('touchcancel', (e) => {e.preventDefault(); action.mousex = action.mousey = null; return false; })
+
+  function render() {
+
+    window.requestAnimationFrame(render);
+    if (action.mousex && action.mousey) {
+      x = Math.floor( action.mousex / grid.size)
+      y = Math.floor( action.mousey / grid.size)
+      if (!action.selected){ 
+        action.selected = { x:x, y:y }
+        grid.drawCursor(x,y)
+      }
+      if (action.selected.x!=x || action.selected.y!=y ) {
+          grid.drawSprite(action.selected.x,action.selected.y)
+          action.selected = { x:x,y:y }
+          grid.drawCursor(x,y)
+      }
+    } else {
+      if (action.selected)
+        grid.drawSprite(action.selected.x,action.selected.y)
+    }
+
+    if (action.mousedown && !action.message) {
+      action.message = 'Fire is not supported yet'
+      grid.drawMessage( action.message)
+    }
+    else if (!action.mousedown && action.message) {
+      grid.cleanMessage(action.message)
+      action.message = null
+    }
+
+  }
+
+  window.requestAnimationFrame(render);
+
+
+</script>
+</body>
+</html>
