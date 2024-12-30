@@ -40,19 +40,16 @@ class Grid {
     size = 44  // size of the sprite
     piece = [    // pieces 
       // (first half is unchpocked)
-      { sx: 62, sy: 99 },
-      { sx: 106, sy: 99 },
-      { sx: 275, sy: 187 },
-      { sx: 148, sy: 186 },
-      { sx: 176, sy: 142 },
-      { sx: 234, sy: 99 },
+      { sx: 14, sy: 10 },
+      { sx: 0, sy: 54 },
+      { sx: 57, sy: 97 },
+      { sx: 100, sy: 11}, 
+
       // (second half is chpocked)
-      { sx: 48, sy: 56 },
-      { sx: 149, sy: 99 },
-      { sx: 48, sy: 56 },
-      { sx: 149, sy: 99 },
-      { sx: 48, sy: 56 },
-      { sx: 149, sy: 99 },
+      { sx: 43, sy: 53 },
+      { sx: 171, sy: 54 },
+      { sx: 142, sy: 96 },
+      { sx: 86, sy: 140 },
     ]
     field = []
 
@@ -72,7 +69,7 @@ class Grid {
       const {dx,dy} = this.getGridCoordinate(x,y);
       if (this.field[x] === undefined) this.field[x] = [];
       if (this.field[x][y] === undefined) 
-        rnd = this.field[x][y] = Math.floor(Math.random()*Math.floor(this.piece.length/2)); 
+        rnd = this.field[x][y] = Math.floor(Math.random()*Math.floor(this.piece.length)); 
       else 
         rnd = this.field[x][y]  
       ctx.drawImage(this.img, this.piece[rnd].sx, this.piece[rnd].sy, this.size, this.size, dx, dy, this.size, this.size);
@@ -143,11 +140,12 @@ class Grid {
   let action = { mousedown: false, mousex: null, mousey: null, selected: null, message: null }
   canvas.addEventListener('mousedown', (e) => { e.preventDefault(); action.mousedown = true; return false; })
   canvas.addEventListener('mouseup', (e) => { e.preventDefault(); action.mousedown = false; return false; })
-  canvas.addEventListener('ontouchstart', (e) => { e.preventDefault(); action.mousedown = true; return false; })
-  canvas.addEventListener('ontouchend', (e) => { e.preventDefault(); action.mousedown = false; return false; })
+  canvas.addEventListener('touchstart', (e) => { e.preventDefault(); action.mousedown = true; return false; })
+  canvas.addEventListener('touchend', (e) => { e.preventDefault(); action.mousedown = false; return false; })
   canvas.addEventListener('mousemove', (e) => { e.preventDefault(); action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
-  canvas.addEventListener('ontouchmove', (e) => { action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
+  canvas.addEventListener('touchmove', (e) => { action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
   canvas.addEventListener('mouseout', (e) => {e.preventDefault(); action.mousex = action.mousey = null; return false; })
+  canvas.addEventListener('touchcancel', (e) => {e.preventDefault(); action.mousex = action.mousey = null; return false; })
 
   function render() {
     if (action.mousex && action.mousey) {
