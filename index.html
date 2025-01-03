@@ -61,7 +61,6 @@
 
         chpock = (sx, sy) => {
             const {x, y} = this.getFieldCoordinate(sx, sy);
-            console.log(sx,sy,x,y);
             if (this.field[x][y] < this.piece.length / 2) {
                 this.field[x][y] += this.piece.length / 2
                 this.snd.currentTime = 0;
@@ -165,7 +164,11 @@
     let action = { mousedown: false, mousex: null, mousey: null, selected: null, message: null }
     canvas.addEventListener('mousedown', (e) => { e.preventDefault(); action.mousedown = true; return false; })
     canvas.addEventListener('mouseup', (e) => { e.preventDefault(); action.mousedown = false; return false; })
-    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); action.mousedown = true; return false; })
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        for (i = 0; i < e.touches.length; i++)
+            grid.chpock(e.touches[i].clientX, e.touches[i].clientY)
+    })
     canvas.addEventListener('touchend', (e) => { e.preventDefault(); action.mousedown = false; return false; })
     canvas.addEventListener('mousemove', (e) => { e.preventDefault(); action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
     canvas.addEventListener('touchmove', (e) => { e.preventDefault(); action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
