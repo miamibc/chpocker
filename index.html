@@ -24,11 +24,61 @@
     background-color: #666;
     --disabled-cursor: none;
   }
+  .controls {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .panel {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    display: none;
+  }
+  .panel.visible {
+    display: block;
+  }
+  .btn {
+    background-color: rgba(255, 255, 255, 0.5);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .btn-toggle {
+    align-self: flex-end;
+  }
+  .btn-sound {
+    width: 100%;
+  }
+  .stats {
+    margin-bottom: 10px;
+  }
 
 </style>
 </head>
 <body  oncontextmenu="return false;">
 
+<div class="controls">
+  <button id="settingsToggle" class="btn btn-toggle">⚙️</button>
+  <div id="settingsPanel" class="panel">
+    <div class="stats">
+      <p>Popped bubbles: <span id="poppedCount">0</span></p>
+    </div>
+    <button id="soundToggle" class="btn btn-sound">🔊 Sound ON</button>
+  </div>
+</div>
 
 <canvas id="canvas"></canvas>
 
@@ -39,6 +89,8 @@
         img = new Image()
         snd = new Audio('chpocker.wav')
         size = 44  // size of the sprite
+        soundEnabled = localStorage.getItem('soundEnabled') !== 'false' // default to true
+        poppedCount = parseInt(localStorage.getItem('poppedCount') || '0')
         piece = [    // pieces
             // (first half is unchpocked)
             {sx: 14, sy: 10},
@@ -63,10 +115,20 @@
             const {x, y} = this.getFieldCoordinate(sx, sy);
             if (this.field[x][y] < this.piece.length / 2) {
                 this.field[x][y] += this.piece.length / 2
-                this.snd.currentTime = 0;
-                this.snd.play();
+                if (this.soundEnabled) {
+                    this.snd.currentTime = 0;
+                    this.snd.play();
+                }
+                this.poppedCount++;
+                localStorage.setItem('poppedCount', this.poppedCount.toString());
                 grid.drawSprite(x, y)
             }
+        }
+
+        toggleSound = () => {
+            this.soundEnabled = !this.soundEnabled;
+            localStorage.setItem('soundEnabled', this.soundEnabled.toString());
+            return this.soundEnabled;
         }
 
         // transform field coordinete to screen coordinate
@@ -166,12 +228,20 @@
     canvas.addEventListener('mouseup', (e) => { e.preventDefault(); action.mousedown = false; return false; })
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        for (i = 0; i < e.touches.length; i++)
-            grid.chpock(e.touches[i].clientX, e.touches[i].clientY)
+        for (let i = 0; i < e.touches.length; i++) {
+            grid.chpock(e.touches[i].clientX, e.touches[i].clientY);
+        }
     })
     canvas.addEventListener('touchend', (e) => { e.preventDefault(); action.mousedown = false; return false; })
     canvas.addEventListener('mousemove', (e) => { e.preventDefault(); action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
-    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); action.mousex = e.clientX - ctx.canvas.offsetLeft; action.mousey = e.clientY - ctx.canvas.offsetTop; return false; })
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        // Process all touch points for multitouch support
+        for (let i = 0; i < e.touches.length; i++) {
+            grid.chpock(e.touches[i].clientX, e.touches[i].clientY);
+        }
+        return false;
+    })
     canvas.addEventListener('mouseout', (e) => {e.preventDefault(); action.mousex = action.mousey = null; return false; })
     canvas.addEventListener('touchcancel', (e) => {e.preventDefault(); action.mousex = action.mousey = null; return false; })
 
@@ -182,6 +252,36 @@
     }
 
     window.requestAnimationFrame(render);
+
+    // UI functionality
+    const settingsToggle = document.getElementById('settingsToggle');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const soundToggle = document.getElementById('soundToggle');
+    const poppedCountElement = document.getElementById('poppedCount');
+
+    // Initialize UI
+    poppedCountElement.textContent = grid.poppedCount;
+    updateSoundButton(grid.soundEnabled);
+
+    // Event listeners
+    settingsToggle.addEventListener('click', () => {
+        settingsPanel.classList.toggle('visible');
+    });
+
+    soundToggle.addEventListener('click', () => {
+        const isEnabled = grid.toggleSound();
+        updateSoundButton(isEnabled);
+    });
+
+    function updateSoundButton(isEnabled) {
+        soundToggle.textContent = isEnabled ? '🔊 Sound ON' : '🔇 Sound OFF';
+        soundToggle.style.backgroundColor = isEnabled ? '#4CAF50' : '#f44336';
+    }
+
+    // Update stats periodically
+    setInterval(() => {
+        poppedCountElement.textContent = grid.poppedCount;
+    }, 1000);
 
 </script>
 </body>
